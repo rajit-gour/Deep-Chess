@@ -76,22 +76,51 @@ class History:
     def is_win(self):
         # check if the board position is a win for either players
         # Feel free to implement this in anyway if needed
-        pass
+        checkarray=[]
+        mapper={'x':1,'o':-1,'0':0}
+        for i in range(9):
+            checkarray.append(mapper[self.board[i]])
+        sums=[]
+        for i in range(3):
+            sums.append(checkarray[0+i]+checkarray[3+i]+checkarray[6+i])
+        for i in range(3):
+            sums.append(checkarray[0+3*i]+checkarray[1+3*i]+checkarray[2+3*i])
+        sums.append(checkarray[0]+checkarray[4]+checkarray[8])
+        sums.append(checkarray[2]+checkarray[4]+checkarray[6])
+        for i in range(8):
+            if sums[i]==3:
+                return 1
+            elif sums[i]==-3:
+                return -1
+        return 0
 
     def is_draw(self):
         # check if the board position is a draw
         # Feel free to implement this in anyway if needed
-        pass
+        check=0
+        mapper={'x':1,'o':-1,'0':0}
+        for i in range(9):
+            check+=(abs(mapper[self.board[i]]))
+        if check==9 and self.is_win()==False:
+            return True
+        else:
+            return False
 
     def get_valid_actions(self):
         # get the empty squares from the board
         # Feel free to implement this in anyway if needed
-        pass
+        emptysquares=[]
+        for i in range(9):
+            if self.board[i]=='0':
+                emptysquares.append(i)
+        return emptysquares
 
     def is_terminal_history(self):
         # check if the history is a terminal history
         # Feel free to implement this in anyway if needed
-        pass
+        if self.is_win()!=0 or self.is_draw()==True:
+            return True
+        return False
 
     def get_utility_given_terminal_history(self):
         # Feel free to implement this in anyway if needed
@@ -100,6 +129,9 @@ class History:
     def update_history(self, action):
         # In case you need to create a deepcopy and update the history obj to get the next history object.
         # Feel free to implement this in anyway if needed
+        self.history.append(action)
+        self.board=self.get_board()
+        return
         pass
 
 
@@ -109,6 +141,46 @@ def backward_induction(history_obj):
     :return: best achievable utility (float) for th current history_obj
     """
     global strategy_dict_x, strategy_dict_o
+
+    if history_obj.is_draw():
+        return 0
+    elif history_obj.is_win()!=0:
+        return history_obj.is_win()
+    else:
+        case=""
+        for i in range(len(history_obj.history)):
+            case+=str(history_obj.history[i])
+        if history_obj.current_player()=='x':
+            bestmove=-1
+            goodscore=-5
+            for i in history_obj.get_valid_actions():
+                hist1=copy.deepcopy(history_obj)
+                hist1.update_history(i)
+                hi=backward_induction(hist1)
+                if hi>goodscore:
+                    goodscore=hi
+                    bestmove=i
+            strategy={}
+            for i in range(9):
+                strategy[str(i)]=0 if i!=bestmove else 1
+            strategy_dict_x[case]=strategy
+            return goodscore
+        else:
+            bestmove=-1
+            goodscore=5
+            for i in history_obj.get_valid_actions():
+                hist1=copy.deepcopy(history_obj)
+                hist1.update_history(i)
+                hi=backward_induction(hist1)
+                if hi<goodscore:
+                    goodscore=hi
+                    bestmove=i
+            strategy={}
+            for i in range(9):
+                strategy[str(i)]=0 if i!=bestmove else 1
+            strategy_dict_o[case]=strategy
+            return goodscore
+
     # TODO implement
     # (1) Implement backward induction for tictactoe
     # (2) Update the global variables strategy_dict_x or strategy_dict_o which are a mapping from histories to

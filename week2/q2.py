@@ -14,7 +14,7 @@ visited_histories_list = []
 
 
 class History:
-    def __init__(self, num_boards=2, history=None):
+    def __init__(self, num_boards=3, history=None):
         """
         # self.history : Eg: [0, 4, 2, 5]
             keeps track of sequence of actions played since the beginning of the game.
@@ -160,18 +160,28 @@ class History:
 
     def is_win(self):
         # Feel free to implement this in anyway if needed
-        pass
+        for j in range(self.num_boards):
+            if not self.is_board_win(self.boards[j]):
+                return False
+        return True 
 
     def get_valid_actions(self):
         # Feel free to implement this in anyway if needed
-        pass
+        valids=[]
+        for i in range(9*self.num_boards):
+            if self.boards[i//9][i%9]=='0' and self.active_board_stats[i//9]==1:
+                valids.append(i)
+        return valids
 
     def is_terminal_history(self):
-        # Feel free to implement this in anyway if needed
-        pass
+        if self.is_win():
+            return True
+        return False
 
     def get_value_given_terminal_history(self):
         # Feel free to implement this in anyway if needed
+        if self.is_terminal_history():
+            return 1 if len(self.history)%2==0 else -1
         pass
 
 
@@ -186,9 +196,44 @@ def alpha_beta_pruning(history_obj, alpha, beta, max_player_flag):
     :param max_player_flag: Bool (True if maximizing player plays)
     :return: float
     """
-    # These two already given lines track the visited histories.
     global visited_histories_list
     visited_histories_list.append(history_obj.history)
+    if history_obj.is_terminal_history():
+        return history_obj.get_value_given_terminal_history()
+        
+    valid=history_obj.get_valid_actions()
+    ordered_valid_moves=[]
+    for i in valid:
+        if i%9==4:
+            ordered_valid_moves.append(i)
+    for i in valid:
+        if i%9==0 or i%9==2 or i%9==6 or i%9==8:
+            ordered_valid_moves.append(i)
+    for i in valid:
+        if i%9==1 or i%9==3 or i%9==5 or i%9==7:
+            ordered_valid_moves.append(i)
+    if max_player_flag:
+        maxim=-math.inf
+        for i in ordered_valid_moves:
+            newhistory=history_obj.history+[i]
+            help=alpha_beta_pruning(History(history_obj.num_boards,newhistory),alpha,beta, not max_player_flag)
+            maxim=max(maxim,help)
+            alpha=max(alpha,help)
+            if beta <= alpha:
+                break
+        return maxim
+    else:
+        minim=math.inf
+        for i in ordered_valid_moves:
+            newhistory=history_obj.history+[i]
+            help=alpha_beta_pruning(History(history_obj.num_boards,newhistory),alpha,beta, not max_player_flag)
+            minim=min(minim,help)
+            beta=min(beta,help)
+            if beta <= alpha:
+                break
+        return minim
+    # These two already given lines track the visited histories.
+
     # TODO implement
     return -2
     # TODO implement
@@ -202,13 +247,35 @@ def maxmin(history_obj, max_player_flag):
     :param max_player_flag: True if the player is maximizing player
     :return: float
     """
+    if history_obj.get_boards_str() in board_positions_val_dict.keys():
+        return board_positions_val_dict[history_obj.get_boards_str()]
+    elif history_obj.is_terminal_history():
+        return history_obj.get_value_given_terminal_history()
+    elif max_player_flag:
+        maxim=-math.inf
+        for i in history_obj.get_valid_actions():
+            newhistory=history_obj.history+[i]
+            help=maxmin(History(history_obj.num_boards,newhistory), not max_player_flag)
+            maxim=max(maxim,help)
+        board_positions_val_dict[history_obj.get_boards_str()] = maxim
+        return maxim
+    else:
+        minim=math.inf
+        for i in history_obj.get_valid_actions():
+            newhistory=history_obj.history+[i]
+            help=maxmin(History(history_obj.num_boards,newhistory), not max_player_flag)
+            minim=min(minim,help)
+        board_positions_val_dict[history_obj.get_boards_str()] = minim
+        return minim
+
+
     # Global variable to keep track of visited board positions. This is a dictionary with keys as str version of
     # self.boards and value represents the maxmin value. Use the get_boards_str function in History class to get
     # the key corresponding to self.boards.
-    global board_positions_val_dict
-    # TODO implement
-    return -2
-    # TODO implement
+    # global board_positions_val_dict
+    # # TODO implement
+    # return -2
+    # # TODO implement
 
 
 def solve_alpha_beta_pruning(history_obj, alpha, beta, max_player_flag):
