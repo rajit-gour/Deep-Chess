@@ -1,4 +1,4 @@
-// USAGE: g++ -std=c++17 -O2 main.cpp -o engine
+// USAGE: g++ -std=c++17 -O3 week3.cpp -o engine
 
 
 #include <fstream>
