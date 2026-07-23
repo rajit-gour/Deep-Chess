@@ -1,0 +1,36 @@
+# executables & build junk
+*.exe
+*.out
+*.o
+*.obj
+
+# logs & python cache
+*.log
+__pycache__/
+*.pyc
+
+# redundant with the committed data*.csv (they already contain the FENs)
+fens*.txt
+
+# local-only docs (kept out of the code deliverable)
+RESULTS.md
+EXPLANATION.md
+
+# local testing tooling (matches are run in cutechess)
+match.py
+anchor.py
+match_depth.py
+parity.py
+nnue_eval.py
+test_eval.cpp
+test_nnue.cpp
+
+# intermediate / superseded nets (regenerable from the data + train scripts)
+weights_baseline.txt
+weights_base200.txt
+weights_deep200.txt
+net_small.txt
+nnue96.txt
+nnue128.txt
+nnue128b.txt
+nnue_rand.txt
