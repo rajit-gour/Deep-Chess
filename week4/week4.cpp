@@ -1,3 +1,4 @@
+//USAGE: g++ -std=c++17 -O3 -static week4.cpp -o engine.exe
 
 #include <fstream>
 #include <iostream>
